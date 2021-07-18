@@ -20,7 +20,7 @@ jobs:
         script: |
           var oneHourAgo = new Date((new Date()) - 1000*60*60);
           var branches = await github.repos.listBranches({
-             owner: 'bbq-beets',
+             owner: 'tingluohuang',
              repo: 'ForkPRCanary',
              per_page: 100
            });
@@ -31,7 +31,7 @@ jobs:
                continue 
              }
              var branch = await github.repos.getBranch({
-              owner: 'bbq-beets',
+              owner: 'tingluohuang',
               repo: 'ForkPRCanary',
               branch: branchName
              });
@@ -40,7 +40,7 @@ jobs:
              var createTime = Date.parse(branch.data.commit.commit.committer.date);
              if(createTime < oneHourAgo) {
                 var deleted = await github.git.deleteRef({
-                  owner: 'bbq-beets',
+                  owner: 'tingluohuang',
                   repo: 'ForkPRCanary',
                   ref: `heads/${branchName}`,
                 });
