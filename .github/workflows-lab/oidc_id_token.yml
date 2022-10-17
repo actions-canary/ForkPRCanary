@@ -21,7 +21,7 @@ jobs:
             core.setOutput('IDTOKENURL', runtimeUrl)
       - run: |
           echo "Value of steps.script.outputs.IDTOKENURL"
-          echo steps.script.outputs.IDTOKENURL
+          echo "${steps.script.outputs.IDTOKENURL}"
       - run: |
           # fail the step
         if: steps.script.outputs.IDTOKENURL != ''
