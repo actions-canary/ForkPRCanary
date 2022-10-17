@@ -20,7 +20,7 @@ jobs:
             core.setOutput('TOKEN', token)
             core.setOutput('IDTOKENURL', runtimeUrl)
       - uses: actions/github-script@v6
-        id: Test IDTOKENURL empty
+        id: Test-IDTOKENURL-empty
         with:
           script: |
             console.log(core.getInput('IDTOKENURL'))
