@@ -19,7 +19,7 @@ jobs:
           retries: 3
           script: |
             var oneHourAgo = new Date((new Date()) - 1000*60*60);
-            var prs = await github.pulls.list({
+            var prs = await github.rest.pulls.list({
                owner: '${{github.repository_owner}}',
                repo: 'ForkPRCanary',
                state: 'open',
@@ -33,7 +33,7 @@ jobs:
                console.log(`PR ${pr.html_url} is created at ${pr.created_at}`);
                var createTime = Date.parse(pr.created_at);
                if(createTime < oneHourAgo) {
-                 var closePR = await github.pulls.update({
+                 var closePR = await github.rest.pulls.update({
                    owner: '${{github.repository_owner}}',
                    repo: 'ForkPRCanary',
                    pull_number: pr.number,
