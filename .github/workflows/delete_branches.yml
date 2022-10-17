@@ -31,7 +31,7 @@ jobs:
                if(branchName === "main") {
                  continue 
                }
-               var branch = await github.repos.getBranch({
+               var branch = await github.rest.repos.getBranch({
                 owner: 'actions-canary',
                 repo: 'ForkPRCanary',
                 branch: branchName
