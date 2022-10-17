@@ -1,12 +1,11 @@
-
 name: Close PR
 
 on:
   workflow_dispatch:
   push:
-    paths: '.github/workflows/close_pr.yml'
+    paths: ".github/workflows/close_pr.yml"
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: "0 */4 * * *"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -14,31 +13,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/github-script@v2.0.0
-      with:
-        debug: true
-        script: |
-          var oneHourAgo = new Date((new Date()) - 1000*60*60);
-          var prs = await github.pulls.list({
-             owner: '${{github.repository_owner}}',
-             repo: 'ForkPRCanary',
-             state: 'open',
-             sort: 'created',
-             direction: 'asc',
-             per_page: 100
-           });
-           console.log(`Found ${prs.data.length} PRs`);
-           for (i = 0; i < prs.data.length; i++) {
-             var pr = prs.data[i];
-             console.log(`PR ${pr.html_url} is created at ${pr.created_at}`);
-             var createTime = Date.parse(pr.created_at);
-             if(createTime < oneHourAgo) {
-               var closePR = await github.pulls.update({
-                 owner: '${{github.repository_owner}}',
-                 repo: 'ForkPRCanary',
-                 pull_number: pr.number,
-                 state: 'close',
-               });
-               console.log(`PR ${closePR.data.html_url} is ${closePR.data.state}`);
+      - uses: actions/github-script@v6
+        with:
+          debug: true
+          retries: 3
+          script: |
+            var oneHourAgo = new Date((new Date()) - 1000*60*60);
+            var prs = await github.pulls.list({
+               owner: '${{github.repository_owner}}',
+               repo: 'ForkPRCanary',
+               state: 'open',
+               sort: 'created',
+               direction: 'asc',
+               per_page: 100
+             });
+             console.log(`Found ${prs.data.length} PRs`);
+             for (i = 0; i < prs.data.length; i++) {
+               var pr = prs.data[i];
+               console.log(`PR ${pr.html_url} is created at ${pr.created_at}`);
+               var createTime = Date.parse(pr.created_at);
+               if(createTime < oneHourAgo) {
+                 var closePR = await github.pulls.update({
+                   owner: '${{github.repository_owner}}',
+                   repo: 'ForkPRCanary',
+                   pull_number: pr.number,
+                   state: 'close',
+                 });
+                 console.log(`PR ${closePR.data.html_url} is ${closePR.data.state}`);
+               }
              }
-           }

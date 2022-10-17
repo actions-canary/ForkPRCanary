@@ -1,13 +1,12 @@
-
 name: Delete Branches
 permissions: write-all
 
 on:
   workflow_dispatch:
   push:
-    paths: '.github/workflows/delete_branches.yml'
+    paths: ".github/workflows/delete_branches.yml"
   schedule:
-    - cron: '* */12 * * *'
+    - cron: "* */12 * * *"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -15,37 +14,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/github-script@v2.0.0
-      with:
-        debug: true
-        script: |
-          var oneHourAgo = new Date((new Date()) - 1000*60*60);
-          var branches = await github.repos.listBranches({
-             owner: 'actions-canary',
-             repo: 'ForkPRCanary',
-             per_page: 100
-           });
-           console.log(`Found ${branches.data.length} Branches`);
-           for (i = 0; i < branches.data.length; i++) {
-             var branchName = branches.data[i].name;
-             if(branchName === "main") {
-               continue 
-             }
-             var branch = await github.repos.getBranch({
-              owner: 'actions-canary',
-              repo: 'ForkPRCanary',
-              branch: branchName
+      - uses: actions/github-script@v6
+        with:
+          debug: true
+          retries: 3
+          script: |
+            var oneHourAgo = new Date((new Date()) - 1000*60*60);
+            var branches = await github.repos.listBranches({
+               owner: 'actions-canary',
+               repo: 'ForkPRCanary',
+               per_page: 100
              });
+             console.log(`Found ${branches.data.length} Branches`);
+             for (i = 0; i < branches.data.length; i++) {
+               var branchName = branches.data[i].name;
+               if(branchName === "main") {
+                 continue 
+               }
+               var branch = await github.repos.getBranch({
+                owner: 'actions-canary',
+                repo: 'ForkPRCanary',
+                branch: branchName
+               });
 
-             console.log(`Branch ${branch.data.name} is created at ${branch.data.commit.commit.committer.date}`);
-             var createTime = Date.parse(branch.data.commit.commit.committer.date);
-             if(createTime < oneHourAgo) {
-                var deleted = await github.git.deleteRef({
-                  owner: 'actions-canary',
-                  repo: 'ForkPRCanary',
-                  ref: `heads/${branchName}`,
-                });
+               console.log(`Branch ${branch.data.name} is created at ${branch.data.commit.commit.committer.date}`);
+               var createTime = Date.parse(branch.data.commit.commit.committer.date);
+               if(createTime < oneHourAgo) {
+                  var deleted = await github.git.deleteRef({
+                    owner: 'actions-canary',
+                    repo: 'ForkPRCanary',
+                    ref: `heads/${branchName}`,
+                  });
 
-               console.log(deleted);
+                 console.log(deleted);
+               }
              }
-           }
