@@ -19,9 +19,10 @@ jobs:
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('TOKEN', token)
             core.setOutput('IDTOKENURL', runtimeUrl)
-      - run: |
-          echo "Value of steps.script.outputs.IDTOKENURL"
-          echo "${steps.script.outputs.IDTOKENURL}"
-      - run: |
-          # fail the step
-        if: steps.script.outputs.IDTOKENURL != ''
+      - uses: actions/github-script@v6
+        id: Test IDTOKENURL empty
+        with:
+          script: |
+            console.log(core.getInput('IDTOKENURL'))
+        #   # fail the step
+        # if: steps.script.outputs.IDTOKENURL != ''
