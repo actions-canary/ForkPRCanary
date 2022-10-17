@@ -40,7 +40,7 @@ jobs:
                console.log(`Branch ${branch.data.name} is created at ${branch.data.commit.commit.committer.date}`);
                var createTime = Date.parse(branch.data.commit.commit.committer.date);
                if(createTime < oneHourAgo) {
-                  var deleted = await github.git.deleteRef({
+                  var deleted = await github.rest.git.deleteRef({
                     owner: 'actions-canary',
                     repo: 'ForkPRCanary',
                     ref: `heads/${branchName}`,
