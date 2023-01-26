@@ -16,7 +16,7 @@ jobs:
 
     steps:
     # We should use workflow file from the base repo and not the fork repo.
-    #- uses: notexist/notexist@vnotexist
+    - uses: notexist/notexist@vnotexist
       
     - uses: actions/checkout@v2
     
