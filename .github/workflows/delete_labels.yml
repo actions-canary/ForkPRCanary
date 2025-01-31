@@ -40,7 +40,7 @@ jobs:
           }
 
           // Retrieve all labels
-          const labels = await github.rest.paginate(
+          const labels = await github.paginate(
             github.rest.issues.listLabelsForRepo,
             { owner, repo }
           );
