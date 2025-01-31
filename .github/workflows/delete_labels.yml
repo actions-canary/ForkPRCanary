@@ -1,0 +1,50 @@
+
+name: Delete Labels
+
+on:
+  workflow_dispatch:
+  push:
+    paths: '.github/workflows/delete_labels.yml'
+  schedule:
+    - cron: '0 */1 * * *'
+
+permissions: write-all
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/github-script@v7
+      with:
+        debug: true
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+
+          // List workflow runs
+          const runs = await github.actions.listWorkflowRunsForRepo({
+            owner,
+            repo,
+            per_page: 1,
+            status: 'completed'
+          });
+
+          if (runs.data.workflow_runs.length > 0) {
+            const latestRun = runs.data.workflow_runs[0];
+            console.log(`Latest workflow run ID: ${latestRun.id}`);
+          } else {
+            console.log('No workflow runs found.');
+            return;
+          }
+
+          // Retrieve all labels
+          const labels = await github.paginate(
+            github.issues.listLabelsForRepo,
+            { owner, repo }
+          );
+
+          // Count the number of labels
+          const labelCount = labels.length;
+          console.log(`Total number of labels: ${labelCount}`);
