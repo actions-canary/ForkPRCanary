@@ -24,7 +24,7 @@ jobs:
           const repo = context.repo.repo;
 
           // List workflow runs
-          const runs = await github.actions.listWorkflowRunsForRepo({
+          const runs = await github.rest.actions.listWorkflowRunsForRepo({
             owner,
             repo,
             per_page: 1,
@@ -40,8 +40,8 @@ jobs:
           }
 
           // Retrieve all labels
-          const labels = await github.paginate(
-            github.issues.listLabelsForRepo,
+          const labels = await github.rest.paginate(
+            github.rest.issues.listLabelsForRepo,
             { owner, repo }
           );
 
