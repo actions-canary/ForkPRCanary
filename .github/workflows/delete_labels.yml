@@ -13,6 +13,7 @@ permissions: write-all
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   cleanup:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
 
     steps:
