@@ -19,8 +19,9 @@ jobs:
     - uses: actions/github-script@v7
       with:
         script: |
-          const owner = context.repo.owner;
-          const repo = context.repo.repo;
+          let owner = context.repo.owner;
+          let repo = context.repo.repo;
+          let latestRunId = 0;
 
           // List workflow runs
           const runs = await github.rest.actions.listWorkflowRunsForRepo({
@@ -31,7 +32,8 @@ jobs:
           });
 
           if (runs.data.workflow_runs.length > 0) {
-            const latestRun = runs.data.workflow_runs[0];
+            let latestRun = runs.data.workflow_runs[0];
+            latestRunId = parseInt(latestRun.id)
             console.log(`Latest workflow run ID: ${latestRun.id}`);
           } else {
             console.log('No workflow runs found.');
@@ -43,15 +45,18 @@ jobs:
             { owner, repo }
           )) {
             for (const label of response.data) {
-              try {
-                await github.rest.issues.deleteLabel({
-                  owner,
-                  repo,
-                  name: label.name
-                });
-                console.log(`Deleted label: ${label.name}`);
-              } catch (error) {
-                console.log(`Failed to delete label: ${label.name}, error: ${error}`);
+              const labelNameAsInt = parseInt(label.name);
+              if (!isNaN(labelNameAsInt) && labelNameAsInt < latestRunId - 100) {
+                try {
+                  await github.rest.issues.deleteLabel({
+                    owner,
+                    repo,
+                    name: label.name
+                  });
+                  console.log(`Deleted label: ${label.name}`);
+                } catch (error) {
+                  console.log(`Failed to delete label: ${label.name}, error: ${error}`);
+                }
               }
             }
           }
