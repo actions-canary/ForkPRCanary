@@ -47,7 +47,7 @@ jobs:
           )) {
             for (const label of response.data) {
               const labelNameAsInt = parseInt(label.name);
-              if (!isNaN(labelNameAsInt) && labelNameAsInt < latestRunId - 100) {
+              if (!isNaN(labelNameAsInt) && labelNameAsInt < latestRunId - 1000) {
                 try {
                   await github.rest.issues.deleteLabel({
                     owner,
