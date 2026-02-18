@@ -1,0 +1,11 @@
+name: ReadOnly
+
+on: workflow_dispatch
+
+permissions: read-all
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
