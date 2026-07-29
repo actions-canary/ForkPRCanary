@@ -1,0 +1,59 @@
+name: Fork Cache Clamp Lab
+run-name: Fork cache clamp ${{ github.event.pull_request.number }} on ${{ github.base_ref }}
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - "cache-clamp-base-*"
+
+permissions: {}
+
+jobs:
+  assert-cache-clamp:
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Assert merged fork PR base cache permission
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        with:
+          script: |
+            const expectedPermission = 3
+            const runtimeToken = process.env.ACTIONS_RUNTIME_TOKEN
+            if (!runtimeToken) {
+              throw new Error("ACTIONS_RUNTIME_TOKEN is unavailable")
+            }
+
+            const parts = runtimeToken.split(".")
+            if (parts.length !== 3) {
+              throw new Error("ACTIONS_RUNTIME_TOKEN is not a JWT")
+            }
+
+            const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"))
+            const cacheClaims = typeof payload.ac === "string" ? JSON.parse(payload.ac) : payload.ac
+            if (!Array.isArray(cacheClaims)) {
+              throw new Error("Runtime token does not contain cache claims")
+            }
+
+            const pullRequest = context.payload.pull_request
+            const expectedRef = `refs/heads/${pullRequest.base.ref}`
+            const cacheClaim = cacheClaims.find(claim => claim.Scope === expectedRef)
+
+            if (!pullRequest.merged) {
+              throw new Error("Expected a merged pull request")
+            }
+            if (pullRequest.head.repo.full_name === pullRequest.base.repo.full_name) {
+              throw new Error("Expected the pull request head repository to be a fork")
+            }
+            if (context.ref !== expectedRef) {
+              throw new Error(`Expected run ref ${expectedRef}, got ${context.ref}`)
+            }
+            if (!cacheClaim) {
+              throw new Error(`No cache claim found for ${expectedRef}`)
+            }
+            if (cacheClaim.Permission !== expectedPermission) {
+              throw new Error(`Expected permission ${expectedPermission} for ${expectedRef}, got ${cacheClaim.Permission}`)
+            }
+
+            core.info(`FORK_CACHE_CLAMP_ASSERTION event=${context.eventName} merged=${pullRequest.merged} ref=${context.ref} scope=${cacheClaim.Scope} permission=${cacheClaim.Permission} expected=${expectedPermission} head=${pullRequest.head.repo.full_name} base=${pullRequest.base.repo.full_name}`)
